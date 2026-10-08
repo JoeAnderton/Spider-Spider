@@ -12,8 +12,10 @@ public class Player : MonoBehaviour
     public float speed = 5;
     public float webDistanceMax = 50;
     public GameObject web;
+    public Transform winScreen;
     GameObject currentHook;
     GameObject currentWeb;
+    Tornado tornado;
     GameObject closestHook;
     GameObject prevHook;
     Rigidbody2D rb;
@@ -26,6 +28,7 @@ public class Player : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         spiderweb = GetComponent<LineRenderer>();
         distanceJoint = gameObject.AddComponent<DistanceJoint2D>();
+        tornado = FindAnyObjectByType<Tornado>();
     }
 
     // Update is called once per frame
@@ -67,6 +70,8 @@ public class Player : MonoBehaviour
             distanceJoint.autoConfigureDistance = false;
             distanceJoint.distance = Vector2.Distance(transform.position, closestHook.transform.position);
             distanceJoint.enableCollision = true;
+            distanceJoint.maxDistanceOnly = false;
+            OnGrappleConnect();
             fired = true;
         }
         else if (context.ReadValue<float>() == 0)
@@ -76,6 +81,21 @@ public class Player : MonoBehaviour
             distanceJoint.enabled = false;
         }
     }
+    void OnGrappleConnect()
+    {
+        Vector2 ropeDirection = ((Vector2)currentHook.gameObject.transform.position - (Vector2)transform.position).normalized;
+
+        // Find the perpendicular vector (the tangent of the circle you will swing on)
+        Vector2 tangent = new Vector2(-ropeDirection.y, ropeDirection.x);
+
+        // Project current velocity onto that tangent line
+        float currentSpeed = rb.linearVelocity.magnitude;
+        float swingDirectionSign = Mathf.Sign(Vector2.Dot(rb.linearVelocity, tangent));
+
+        // Force the player's velocity to perfectly match the swing arc at original speed
+        rb.linearVelocity = tangent * currentSpeed * swingDirectionSign;
+    }
+
     public GameObject findNextHook()
     {
         GameObject[] gos;
@@ -124,6 +144,16 @@ public class Player : MonoBehaviour
         {
             SceneManager.LoadScene("SampleScene");
         }
+        if (collision.gameObject.CompareTag("Win"))
+        {
+            winScreen.gameObject.SetActive(true);
+            tornado.Stop();
+        }
+        if (collision.gameObject.CompareTag("Bounce"))
+        {
+            rb.linearVelocityY = 15f;
+            rb.linearVelocityX = 15f;
+        }
     }
     public void OnCollisionStay2D(Collision2D collision)
     {
@@ -157,5 +187,10 @@ public class Player : MonoBehaviour
                 distanceJoint.enabled = true;
             }
         }
+    }
+
+    public void restartLevel()
+    {
+        SceneManager.LoadScene("SampleScene");
     }
 }
