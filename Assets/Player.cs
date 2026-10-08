@@ -10,9 +10,12 @@ public class Player : MonoBehaviour
     bool fired = false;
     bool grounded = false;
     public float speed = 5;
+    public float webDistanceMax = 50;
     public GameObject web;
     GameObject currentHook;
     GameObject currentWeb;
+    GameObject closestHook;
+    GameObject prevHook;
     Rigidbody2D rb;
     LineRenderer spiderweb;
     DistanceJoint2D distanceJoint;
@@ -22,6 +25,7 @@ public class Player : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         spiderweb = GetComponent<LineRenderer>();
+        distanceJoint = gameObject.AddComponent<DistanceJoint2D>();
     }
 
     // Update is called once per frame
@@ -35,34 +39,33 @@ public class Player : MonoBehaviour
         {
             rb.linearVelocityX = playerDirection.x * speed;
         }
+        closestHook = findNextHook();
+        if (closestHook != null)
+        {
+            closestHook.GetComponent<SpriteRenderer>().color = Color.yellow;
+        }
+        else
+        {
+            spiderweb.enabled = false;
+            distanceJoint.enabled = false;
+        }
+        if (prevHook != closestHook && prevHook != null)
+        {
+            prevHook.GetComponent<SpriteRenderer>().color = new Color(239f / 255f, 91f / 255f, 115f / 255f);
+        }
     }
     public void FindClosestHook(InputAction.CallbackContext context)
     {
-        if (context.ReadValue<float>() == 1 && !fired)
+        if (context.ReadValue<float>() == 1 && !fired && closestHook != null)
         {
-            GameObject[] gos;
-            gos = GameObject.FindGameObjectsWithTag("Hook");
-            GameObject closest = null;
-            float distance = Mathf.Infinity;
-            Vector3 position = transform.position;
-            foreach (GameObject go in gos)
-            {
-                Vector3 diff = go.transform.position - position;
-                float curDistance = diff.sqrMagnitude;
-                if (curDistance < distance && go != currentHook)
-                {
-                    closest = go;
-                    distance = curDistance;
-                }
-            }
-            currentHook = closest;
+            currentHook = closestHook;
             spiderweb.enabled = true;
+            distanceJoint.enabled = true;
             spiderweb.SetPosition(0, GetComponent<Transform>().position);
-            distanceJoint = gameObject.AddComponent<DistanceJoint2D>();
-            spiderweb.SetPosition(1, closest.GetComponent<Transform>().position);
-            distanceJoint.connectedBody = closest.GetComponent<Rigidbody2D>();
+            spiderweb.SetPosition(1, closestHook.GetComponent<Transform>().position);
+            distanceJoint.connectedBody = closestHook.GetComponent<Rigidbody2D>();
             distanceJoint.autoConfigureDistance = false;
-            distanceJoint.distance = Vector2.Distance(transform.position, closest.transform.position);
+            distanceJoint.distance = Vector2.Distance(transform.position, closestHook.transform.position);
             distanceJoint.enableCollision = true;
             fired = true;
         }
@@ -70,10 +73,29 @@ public class Player : MonoBehaviour
         {
             fired = false;
             spiderweb.enabled = false;
-            Destroy(distanceJoint);
+            distanceJoint.enabled = false;
         }
     }
-
+    public GameObject findNextHook()
+    {
+        GameObject[] gos;
+        gos = GameObject.FindGameObjectsWithTag("Hook");
+        GameObject closest = null;
+        float distance = Mathf.Infinity;
+        Vector3 position = transform.position;
+        foreach (GameObject go in gos)
+        {
+            Vector3 diff = go.transform.position - position;
+            float curDistance = diff.sqrMagnitude;
+            if (curDistance < distance && go && curDistance <= webDistanceMax)
+            {
+                closest = go;
+                distance = curDistance;
+            }
+        }
+        prevHook = closestHook;
+        return closest;
+    }
     public void Movement(InputAction.CallbackContext context)
     {
         playerDirection = context.ReadValue<Vector2>();
@@ -129,7 +151,7 @@ public class Player : MonoBehaviour
         if (collision.gameObject.tag == "Platform")
         {
             grounded = false;
-            if (distanceJoint != null)
+            if (distanceJoint != null && currentHook != null)
             {
                 distanceJoint.distance = Vector2.Distance(transform.position, currentHook.transform.position);
                 distanceJoint.enabled = true;
