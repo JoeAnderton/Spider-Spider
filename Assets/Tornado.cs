@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Tornado : MonoBehaviour
 {
-    public float speed = 5;
+    public float speed = 0;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

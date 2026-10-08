@@ -9,10 +9,13 @@ public class Player : MonoBehaviour
 {
     bool fired = false;
     bool grounded = false;
+    bool gameStart = false;
     public float speed = 5;
+    public float tornadoSpeed = 10;
     public float webDistanceMax = 50;
     public GameObject web;
     public Transform winScreen;
+    public Transform startScreen;
     GameObject currentHook;
     GameObject currentWeb;
     Tornado tornado;
@@ -59,26 +62,29 @@ public class Player : MonoBehaviour
     }
     public void FindClosestHook(InputAction.CallbackContext context)
     {
-        if (context.ReadValue<float>() == 1 && !fired && closestHook != null)
+        if (gameStart)
         {
-            currentHook = closestHook;
-            spiderweb.enabled = true;
-            distanceJoint.enabled = true;
-            spiderweb.SetPosition(0, GetComponent<Transform>().position);
-            spiderweb.SetPosition(1, closestHook.GetComponent<Transform>().position);
-            distanceJoint.connectedBody = closestHook.GetComponent<Rigidbody2D>();
-            distanceJoint.autoConfigureDistance = false;
-            distanceJoint.distance = Vector2.Distance(transform.position, closestHook.transform.position);
-            distanceJoint.enableCollision = true;
-            distanceJoint.maxDistanceOnly = false;
-            OnGrappleConnect();
-            fired = true;
-        }
-        else if (context.ReadValue<float>() == 0)
-        {
-            fired = false;
-            spiderweb.enabled = false;
-            distanceJoint.enabled = false;
+            if (context.ReadValue<float>() == 1 && !fired && closestHook != null)
+            {
+                currentHook = closestHook;
+                spiderweb.enabled = true;
+                distanceJoint.enabled = true;
+                spiderweb.SetPosition(0, GetComponent<Transform>().position);
+                spiderweb.SetPosition(1, closestHook.GetComponent<Transform>().position);
+                distanceJoint.connectedBody = closestHook.GetComponent<Rigidbody2D>();
+                distanceJoint.autoConfigureDistance = false;
+                distanceJoint.distance = Vector2.Distance(transform.position, closestHook.transform.position);
+                distanceJoint.enableCollision = true;
+                distanceJoint.maxDistanceOnly = false;
+                OnGrappleConnect();
+                fired = true;
+            }
+            else if (context.ReadValue<float>() == 0)
+            {
+                fired = false;
+                spiderweb.enabled = false;
+                distanceJoint.enabled = false;
+            }
         }
     }
     void OnGrappleConnect()
@@ -118,7 +124,10 @@ public class Player : MonoBehaviour
     }
     public void Movement(InputAction.CallbackContext context)
     {
-        playerDirection = context.ReadValue<Vector2>();
+        if (gameStart)
+        {
+            playerDirection = context.ReadValue<Vector2>();
+        }
     }
 
     public void OnCollisionEnter2D(Collision2D collision)
@@ -192,5 +201,12 @@ public class Player : MonoBehaviour
     public void restartLevel()
     {
         SceneManager.LoadScene("SampleScene");
+    }
+
+    public void startLevel()
+    {
+        gameStart = true;
+        startScreen.gameObject.SetActive(false);
+        tornado.speed = tornadoSpeed;
     }
 }

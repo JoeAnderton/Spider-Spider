@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class Camera : MonoBehaviour
+public class CameraScript : MonoBehaviour
 {
     float cameraY = 0;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
