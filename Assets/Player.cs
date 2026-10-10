@@ -151,17 +151,22 @@ public class Player : MonoBehaviour
         }
         if (collision.gameObject.CompareTag("Defeat"))
         {
-            SceneManager.LoadScene("SampleScene");
-        }
-        if (collision.gameObject.CompareTag("Win"))
-        {
-            winScreen.gameObject.SetActive(true);
-            tornado.Stop();
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
         if (collision.gameObject.CompareTag("Bounce"))
         {
             rb.linearVelocityY = 15f;
             rb.linearVelocityX = 15f;
+        }
+    }
+
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Win"))
+        {
+            winScreen.gameObject.SetActive(true);
+            tornado.Stop();
+            gameStart = false;
         }
     }
     public void OnCollisionStay2D(Collision2D collision)
@@ -190,7 +195,7 @@ public class Player : MonoBehaviour
         if (collision.gameObject.tag == "Platform")
         {
             grounded = false;
-            if (distanceJoint != null && currentHook != null)
+            if (distanceJoint != null && currentHook != null && fired)
             {
                 distanceJoint.distance = Vector2.Distance(transform.position, currentHook.transform.position);
                 distanceJoint.enabled = true;
@@ -200,7 +205,7 @@ public class Player : MonoBehaviour
 
     public void restartLevel()
     {
-        SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void startLevel()
