@@ -16,11 +16,14 @@ public class Player : MonoBehaviour
     public GameObject web;
     public Transform winScreen;
     public Transform startScreen;
+    float spiderSize;
+    Animator animator;
     GameObject currentHook;
     GameObject currentWeb;
     Tornado tornado;
     GameObject closestHook;
     GameObject prevHook;
+    public GameObject sprites;
     Rigidbody2D rb;
     LineRenderer spiderweb;
     DistanceJoint2D distanceJoint;
@@ -32,6 +35,8 @@ public class Player : MonoBehaviour
         spiderweb = GetComponent<LineRenderer>();
         distanceJoint = gameObject.AddComponent<DistanceJoint2D>();
         tornado = FindAnyObjectByType<Tornado>();
+        animator = GetComponentInChildren<Animator>();
+        spiderSize = sprites.transform.localScale.x;
     }
 
     // Update is called once per frame
@@ -44,6 +49,14 @@ public class Player : MonoBehaviour
         if (grounded)
         {
             rb.linearVelocityX = playerDirection.x * speed;
+            if(playerDirection != new Vector2(0,0))
+            {
+                animator.SetBool("Walking", true);
+            }
+            else
+            {
+                animator.SetBool("Walking", false);
+            }
         }
         closestHook = findNextHook();
         if (closestHook != null)
@@ -58,6 +71,14 @@ public class Player : MonoBehaviour
         if (prevHook != closestHook && prevHook != null)
         {
             prevHook.GetComponent<SpriteRenderer>().color = new Color(239f / 255f, 91f / 255f, 115f / 255f);
+        }
+        if (rb.linearVelocityX < -1)
+        {
+            sprites.transform.localScale = new Vector3(-spiderSize, sprites.transform.localScale.y, sprites.transform.localScale.z);
+        }
+        if (rb.linearVelocityX > 1)
+        {
+            sprites.transform.localScale = new Vector3(spiderSize, sprites.transform.localScale.y, sprites.transform.localScale.z);
         }
     }
     public void FindClosestHook(InputAction.CallbackContext context)
@@ -91,14 +112,11 @@ public class Player : MonoBehaviour
     {
         Vector2 ropeDirection = ((Vector2)currentHook.gameObject.transform.position - (Vector2)transform.position).normalized;
 
-        // Find the perpendicular vector (the tangent of the circle you will swing on)
         Vector2 tangent = new Vector2(-ropeDirection.y, ropeDirection.x);
 
-        // Project current velocity onto that tangent line
         float currentSpeed = rb.linearVelocity.magnitude;
         float swingDirectionSign = Mathf.Sign(Vector2.Dot(rb.linearVelocity, tangent));
 
-        // Force the player's velocity to perfectly match the swing arc at original speed
         rb.linearVelocity = tangent * currentSpeed * swingDirectionSign;
     }
 
@@ -195,6 +213,7 @@ public class Player : MonoBehaviour
         if (collision.gameObject.tag == "Platform")
         {
             grounded = false;
+            animator.SetBool("Walking", false);
             if (distanceJoint != null && currentHook != null && fired)
             {
                 distanceJoint.distance = Vector2.Distance(transform.position, currentHook.transform.position);
