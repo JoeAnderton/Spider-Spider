@@ -16,6 +16,7 @@ public class Player : MonoBehaviour
     public GameObject web;
     public Transform winScreen;
     public Transform startScreen;
+    public Transform webStart;
     float spiderSize;
     Animator animator;
     GameObject currentHook;
@@ -44,10 +45,12 @@ public class Player : MonoBehaviour
     {
         if (fired)
         {
-            spiderweb.SetPosition(0, GetComponent<Transform>().position);
+            spiderweb.SetPosition(0, webStart.position);
         }
         if (grounded)
         {
+            animator.SetBool("Hooked", false);
+            animator.SetBool("Falling", false);
             rb.linearVelocityX = playerDirection.x * speed;
             if(playerDirection != new Vector2(0,0))
             {
@@ -58,7 +61,16 @@ public class Player : MonoBehaviour
                 animator.SetBool("Walking", false);
             }
         }
-        closestHook = findNextHook();
+        else if (!grounded && !fired)
+        {
+            animator.SetBool("Hooked", false);
+            animator.SetBool("Falling", true);
+        }
+        else if (!grounded && fired)
+        {
+            animator.SetBool("Hooked", true);
+        }
+            closestHook = findNextHook();
         if (closestHook != null)
         {
             closestHook.GetComponent<SpriteRenderer>().color = Color.yellow;
