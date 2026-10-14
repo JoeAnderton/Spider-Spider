@@ -30,7 +30,8 @@ Transform:
   m_LocalPosition: {x: -0.122, y: 0.61, z: 0}
   m_LocalScale: {x: 0.31941, y: 0.31941, z: 0.31941}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 246895626650670135}
   m_Father: {fileID: 4836181617250997424}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &7029259766540814057
@@ -139,11 +140,11 @@ Transform:
   m_GameObject: {fileID: 968162331629728170}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.6, y: 1.03, z: 1}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 2.2604175, y: 1.3149244, z: 3.1307726}
+  m_LocalScale: {x: 3.1307726, y: 3.1307726, z: 3.1307726}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4836181617250997424}
+  m_Father: {fileID: 3308145608784342557}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5491562849932279673
 GameObject:
@@ -332,7 +333,6 @@ Transform:
   m_Children:
   - {fileID: 3371764648445391465}
   - {fileID: 3308145608784342557}
-  - {fileID: 246895626650670135}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3806118725807356397
@@ -428,7 +428,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0.09925103, y: 0.5663147}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -438,7 +438,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.80149794, y: 2.1326306}
   m_EdgeRadius: 0
 --- !u!50 &2798494955692228531
 Rigidbody2D:
@@ -483,8 +483,8 @@ MonoBehaviour:
   tornadoSpeed: 10
   webDistanceMax: 70
   web: {fileID: 309723350256338449, guid: 751c00e11ac53d643ae37e3fc40e1a4f, type: 3}
-  winScreen: {fileID: 0}
-  startScreen: {fileID: 0}
+  winScreen: {fileID: 869538611861445809, guid: a8b34a4dc3a579f4796b47b6292ce19e, type: 3}
+  startScreen: {fileID: 6032071725501674966, guid: 76a20840417357145ad836cdfa07c34b, type: 3}
   webStart: {fileID: 246895626650670135}
   sprites: {fileID: 468508807433114440}
 --- !u!114 &6846278563654176288

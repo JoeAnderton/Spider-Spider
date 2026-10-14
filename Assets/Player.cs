@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 using Unity.Mathematics;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class Player : MonoBehaviour
 {
@@ -17,6 +18,9 @@ public class Player : MonoBehaviour
     public Transform winScreen;
     public Transform startScreen;
     public Transform webStart;
+    public Transform loseButton;
+    public Transform winButton;
+    public TextMeshProUGUI defeatText;
     float spiderSize;
     Animator animator;
     GameObject currentHook;
@@ -38,39 +42,52 @@ public class Player : MonoBehaviour
         tornado = FindAnyObjectByType<Tornado>();
         animator = GetComponentInChildren<Animator>();
         spiderSize = sprites.transform.localScale.x;
+        Physics2D.IgnoreLayerCollision(0, 0, false);
     }
 
     // Update is called once per frame
     void Update()
-    {
-        if (fired)
+    {   if (gameStart)
         {
-            spiderweb.SetPosition(0, webStart.position);
-        }
-        if (grounded)
-        {
-            animator.SetBool("Hooked", false);
-            animator.SetBool("Falling", false);
-            rb.linearVelocityX = playerDirection.x * speed;
-            if(playerDirection != new Vector2(0,0))
+            if (fired)
             {
-                animator.SetBool("Walking", true);
+                spiderweb.SetPosition(0, webStart.position);
             }
-            else
+            if (grounded)
             {
-                animator.SetBool("Walking", false);
+                animator.SetBool("Hooked", false);
+                animator.SetBool("Rising", false);
+                animator.SetBool("Falling", false);
+                rb.linearVelocityX = playerDirection.x * speed;
+                if (playerDirection.x != 0)
+                {
+                    animator.SetBool("Walking", true);
+                }
+                else
+                {
+                    animator.SetBool("Walking", false);
+                }
+            }
+            else if (!grounded && !fired)
+            {
+                animator.SetBool("Hooked", false);
+                if (rb.linearVelocityY > 0)
+                {
+                    animator.SetBool("Rising", true);
+                    animator.SetBool("Falling", false);
+                }
+                else
+                {
+                    animator.SetBool("Rising", false);
+                    animator.SetBool("Falling", true);
+                }
+            }
+            else if (!grounded && fired)
+            {
+                animator.SetBool("Hooked", true);
             }
         }
-        else if (!grounded && !fired)
-        {
-            animator.SetBool("Hooked", false);
-            animator.SetBool("Falling", true);
-        }
-        else if (!grounded && fired)
-        {
-            animator.SetBool("Hooked", true);
-        }
-            closestHook = findNextHook();
+        closestHook = findNextHook();
         if (closestHook != null)
         {
             closestHook.GetComponent<SpriteRenderer>().color = Color.yellow;
@@ -84,11 +101,11 @@ public class Player : MonoBehaviour
         {
             prevHook.GetComponent<SpriteRenderer>().color = new Color(239f / 255f, 91f / 255f, 115f / 255f);
         }
-        if (rb.linearVelocityX < -1)
+        if (rb.linearVelocityX < -1 && !fired)
         {
             sprites.transform.localScale = new Vector3(-spiderSize, sprites.transform.localScale.y, sprites.transform.localScale.z);
         }
-        if (rb.linearVelocityX > 1)
+        if (rb.linearVelocityX > 1 && !fired)
         {
             sprites.transform.localScale = new Vector3(spiderSize, sprites.transform.localScale.y, sprites.transform.localScale.z);
         }
@@ -181,9 +198,20 @@ public class Player : MonoBehaviour
         }
         if (collision.gameObject.CompareTag("Defeat"))
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            Physics2D.IgnoreLayerCollision(0,0, true);
+            gameStart = false;
+            string defeat = "defeat...";
+            spiderweb.enabled = false;
+            winScreen.gameObject.SetActive(true);
+            defeatText.text = defeat;
+            tornado.speed = 0;
+            animator.SetBool("defeated", true);
+            rb.linearVelocity = new Vector2(0, 0);
+            distanceJoint.enabled = false;
+            loseButton.gameObject.SetActive(true);
+            winButton.gameObject.SetActive(false);
         }
-        if (collision.gameObject.CompareTag("Bounce"))
+        if (collision.gameObject.CompareTag("Bounce") && gameStart)
         {
             rb.linearVelocityY = 15f;
             rb.linearVelocityX = 15f;
@@ -194,7 +222,21 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Win"))
         {
+            animator.SetBool("Falling", false);
+            animator.SetBool("Walking", false);
+            animator.SetBool("Hooked", false);
+            animator.SetBool("Won", true);
             winScreen.gameObject.SetActive(true);
+            if (SceneManager.GetActiveScene().name != "Level 6")
+            {
+                loseButton.gameObject.SetActive(false);
+                winButton.gameObject.SetActive(true);
+            }
+            else
+            {
+                loseButton.gameObject.SetActive(true);
+                winButton.gameObject.SetActive(false);
+            }
             tornado.Stop();
             gameStart = false;
         }
@@ -244,5 +286,15 @@ public class Player : MonoBehaviour
         gameStart = true;
         startScreen.gameObject.SetActive(false);
         tornado.speed = tornadoSpeed;
+    }
+
+    public void MainMenu()
+    {
+        SceneManager.LoadScene("Main Menu");
+    }
+
+    public void NextLevel()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 }
